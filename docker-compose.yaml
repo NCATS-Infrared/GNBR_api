@@ -23,6 +23,6 @@ services:
     volumes:
       # NOTE: if docker-compose is run under 'sudo' then $HOME will be 'root'
       # Change path2neo to your local path
-      - /Users/srensi/Documents/GitHub/GNBR_api/data/neo4j/data:/data
-      - /Users/srensi/Documents/GitHub/GNBR_api/data/neo4j/import:/import
-      - /Users/srensi/Documents/GitHub/GNBR_api/data/neo4j/logs:/logs 
+      - path/to/neo4j/data:/data
+      - path/to/neo4j/import:/import
+      - path/to/neo4j/logs:/logs 
