@@ -79,22 +79,32 @@ def get_statements(s, relations=None, t=None, keywords=None, types=None, pageNum
     where = 'WHERE m.uri={entity1} '
     ret = 'RETURN m,r,n'
 
-    query = match + where + ret
     entity1 = s[0]
+    query_params = {"entity1" : entity1}
+
+    if t:
+        entity2 = t[0]
+        where += 'AND n.uri={entity2} '
+        query_params["entity2"] = entity2
+
+    query = match + where + ret
     driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
     with driver.session() as neo4j:
-        results = neo4j.run(query, {"entity1" : entity1})
+        results = neo4j.run(query, query_params)
 
     statements = []
     for record in results:
         subject = BeaconStatementSubject(id=record['m']['uri'], name=record['m']['name'])
         object = BeaconStatementObject(id=record['n']['uri'], name=record['n']['name'])
 
-        code, score = sorted(record['r'].items(), key=lambda x: x[1])[-1]
         print(record['r'])
         if relations:
             code = relations
             score = record['r'][relations]
+            if score == 0:
+                continue
+        else:
+            code, score = sorted(record['r'].items(), key=lambda x: x[1])[-1]
 
         predicate = BeaconStatementPredicate(id='curie', name=predicate_map[code])
         statement = BeaconStatement()
