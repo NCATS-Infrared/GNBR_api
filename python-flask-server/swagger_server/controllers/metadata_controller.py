@@ -4,7 +4,7 @@ import six
 from swagger_server.models.beacon_concept_type import BeaconConceptType  # noqa: E501
 from swagger_server.models.beacon_predicate import BeaconPredicate  # noqa: E501
 from swagger_server import util
-from metadata import predicate_map
+from swagger_server.metadata.predicates import predicate_map
 
 
 def get_concept_types():  # noqa: E501
