@@ -4,6 +4,7 @@ import six
 from swagger_server.models.beacon_concept_type import BeaconConceptType  # noqa: E501
 from swagger_server.models.beacon_predicate import BeaconPredicate  # noqa: E501
 from swagger_server import util
+from metadata import predicate_map
 
 
 def get_concept_types():  # noqa: E501
@@ -14,7 +15,8 @@ def get_concept_types():  # noqa: E501
 
     :rtype: List[BeaconConceptType]
     """
-    return 'do some magic!'
+
+    return [BeaconConceptType(id=type) for type in ['Chemical', 'Gene', 'Disease']]
 
 
 def get_predicates():  # noqa: E501
@@ -25,4 +27,5 @@ def get_predicates():  # noqa: E501
 
     :rtype: List[BeaconPredicate]
     """
-    return 'do some magic!'
+
+    return [BeaconPredicate(id=key, name=value) for key, value in predicate_map.items()]
