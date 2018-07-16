@@ -34,7 +34,6 @@ def get_evidence(statementId, keywords=None, pageNumber=None, pageSize=None):  #
     MATCH (s)-[:HAS_THEME]-(t)
     RETURN s.text as text, s.pmid as pmid, sum(t[{code}]) as theme
     ORDER BY theme DESC
-    LIMIT 5
     """
 
     info = statementId.split('|')
@@ -78,7 +77,7 @@ def get_statements(s, relations=None, t=None, keywords=None, types=None, pageNum
     """
     match = 'MATCH p=(m:Entity)-[r:STATEMENT]-(n:Entity) '
     where = 'WHERE m.uri={entity1} '
-    ret = 'RETURN m,r,n, labels(m) as sub_type, labels(n) as obj_type LIMIT 10'
+    ret = 'RETURN m,r,n, labels(m) as sub_type, labels(n) as obj_type'
     statements = []
 
     for subj in s:
