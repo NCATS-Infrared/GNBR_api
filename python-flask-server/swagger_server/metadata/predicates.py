@@ -21,7 +21,7 @@ predicate_map = {
 	"x"  : "correlates_with",
 	"d"  : "is_therapeutic_target_for",
 	"sa" : "causes",
-	"t"  : "contributes_to",
+	# "t"  : "contributes_to",
 	"t"  : "treats",
 	"c"  : "treats",
 	"pa" : "treats",

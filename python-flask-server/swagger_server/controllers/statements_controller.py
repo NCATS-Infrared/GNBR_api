@@ -27,11 +27,6 @@ def get_evidence(statementId, keywords=None, pageNumber=None, pageSize=None):  #
 
     :rtype: List[BeaconAnnotation]
     """
-    
-    info = statementId.split('|')
-    entity1 = info[0]
-    entity2 = info[1]
-    code = info[2]
     query = """
     MATCH (m:Entity)-[:IN_SENTENCE]-(s:Sentence)-[:IN_SENTENCE]-(n:Entity)
     WHERE m.uri={entity1} AND n.uri={entity2}
@@ -39,8 +34,14 @@ def get_evidence(statementId, keywords=None, pageNumber=None, pageSize=None):  #
     MATCH (s)-[:HAS_THEME]-(t)
     RETURN s.text as text, s.pmid as pmid, sum(t[{code}]) as theme
     ORDER BY theme DESC
-    LIMIT 10
+    LIMIT 5
     """
+
+    info = statementId.split('|')
+    entity1 = info[0]
+    entity2 = info[1]
+    code = info[2]
+
     driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query, {"entity1" : entity1,"entity2" : entity2, "code":code})
@@ -77,40 +78,40 @@ def get_statements(s, relations=None, t=None, keywords=None, types=None, pageNum
     """
     match = 'MATCH p=(m:Entity)-[r:STATEMENT]-(n:Entity) '
     where = 'WHERE m.uri={entity1} '
-    ret = 'RETURN m,r,n'
-
-    entity1 = s[0]
-    query_params = {"entity1" : entity1}
-
-    if t:
-        entity2 = t[0]
-        where += 'AND n.uri={entity2} '
-        query_params["entity2"] = entity2
-
-    query = match + where + ret
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
-    with driver.session() as neo4j:
-        results = neo4j.run(query, query_params)
-
+    ret = 'RETURN m,r,n, labels(m) as sub_type, labels(n) as obj_type LIMIT 10'
     statements = []
-    for record in results:
-        subject = BeaconStatementSubject(id=record['m']['uri'], name=record['m']['name'])
-        object = BeaconStatementObject(id=record['n']['uri'], name=record['n']['name'])
 
-        print(record['r'])
-        if relations:
-            code = relations
-            score = record['r'][relations]
-            if score == 0:
-                continue
-        else:
-            code, score = sorted(record['r'].items(), key=lambda x: x[1])[-1]
+    for subj in s:
+        entity1 = subj
+        query_params = {"entity1" : entity1}
 
-        predicate = BeaconStatementPredicate(id='curie', name=predicate_map[code])
-        statement = BeaconStatement()
-        statement.id = '|'.join([subject.id, object.id, code])
-        statement.subject = subject
-        statement.object = object
-        statement.predicate = predicate
-        statements.append(statement)
+        if t:
+            entity2 = t[0]
+            where += 'AND n.uri={entity2} '
+            query_params["entity2"] = entity2
+
+        query = match + where + ret
+        driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+        with driver.session() as neo4j:
+            results = neo4j.run(query, query_params)
+
+        for record in results:
+            subject = BeaconStatementSubject(id=record['m']['uri'], name=record['m']['name'], type=','.join(record['sub_type']))
+            object = BeaconStatementObject(id=record['n']['uri'], name=record['n']['name'], type=','.join(record['obj_type']))
+
+            if relations:
+                code = relations
+                score = record['r'][relations]
+                if score == 0:
+                    continue
+            else:
+                code, score = sorted(record['r'].items(), key=lambda x: x[1])[-1]
+
+            predicate = BeaconStatementPredicate(id='curie', name=predicate_map[code])
+            statement = BeaconStatement()
+            statement.id = '|'.join([subject.id, object.id, code])
+            statement.subject = subject
+            statement.object = object
+            statement.predicate = predicate
+            statements.append(statement)
     return statements
