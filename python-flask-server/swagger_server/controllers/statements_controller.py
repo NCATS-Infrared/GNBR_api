@@ -99,18 +99,24 @@ def get_statements(s, relations=None, t=None, keywords=None, types=None, pageNum
             object = BeaconStatementObject(id=record['n']['uri'], name=record['n']['name'], type=','.join(record['obj_type']))
 
             if relations:
-                code = relations
-                score = record['r'][relations]
-                if score == 0:
+                max_score = 0
+                code = None
+                for c in relations.split():
+                    score = record['r'][c]
+                    if score != None and score > max_score:
+                        max_score = score
+                        code = c
+                if code == None:
                     continue
             else:
                 code, score = sorted(record['r'].items(), key=lambda x: x[1])[-1]
 
-            predicate = BeaconStatementPredicate(id='curie', name=predicate_map[code])
-            statement = BeaconStatement()
-            statement.id = '|'.join([subject.id, object.id, code])
-            statement.subject = subject
-            statement.object = object
-            statement.predicate = predicate
-            statements.append(statement)
+            if code in predicate_map:
+                predicate = BeaconStatementPredicate(id='curie', name=predicate_map[code])
+                statement = BeaconStatement()
+                statement.id = '|'.join([subject.id, object.id, code])
+                statement.subject = subject
+                statement.object = object
+                statement.predicate = predicate
+                statements.append(statement)
     return statements
