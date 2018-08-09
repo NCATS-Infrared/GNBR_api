@@ -42,7 +42,7 @@ def get_concept_details(conceptId):  # noqa: E501
     """
 
     entity_id = conceptId
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+    driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query, {"entity_id" : entity_id})
     details, synonyms = zip( *[ ( BeaconConceptDetail(tag='pmid:' + record['s']['pmid'], value=record['s']['text'] ), record['name']) for record in results ] )
@@ -108,7 +108,7 @@ def get_concepts(keywords, types=None, pageNumber=None, pageSize=None):  # noqa:
     return m.uri as uri, m.name as name, collect(distinct r.raw_string) as syns
     """
     word = keywords
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+    driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query, {"keyword" : keywords})
     return [BeaconConcept(id=record['m']['uri'], name=record['m']['name'], type=','.join(record['labels']), synonyms=record['syns']) for record in results]
@@ -131,7 +131,7 @@ def get_exact_matches_to_concept(conceptId):  # noqa: E501
     """
 
     entity_id = conceptId
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+    driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query, {"entity_id" : entity_id})
     return [record['e']['uri'] for record in results]

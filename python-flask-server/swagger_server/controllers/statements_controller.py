@@ -41,7 +41,7 @@ def get_evidence(statementId, keywords=None, pageNumber=None, pageSize=None):  #
     entity2 = info[1]
     code = info[2]
 
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+    driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query, {"entity1" : entity1,"entity2" : entity2, "code":code})
     output = []
@@ -90,7 +90,7 @@ def get_statements(s, relations=None, t=None, keywords=None, types=None, pageNum
             query_params["entity2"] = entity2
 
         query = match + where + ret
-        driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+        driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
         with driver.session() as neo4j:
             results = neo4j.run(query, query_params)
 

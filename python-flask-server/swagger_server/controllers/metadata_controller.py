@@ -20,10 +20,11 @@ def get_concept_types():  # noqa: E501
     MATCH (n) 
     RETURN DISTINCT count(labels(n)) as count, labels(n) as types;
     """
-    driver = GraphDatabase.driver('bolt://172.18.0.2:7687', auth=('',''))
+    driver = GraphDatabase.driver('bolt://db:7687', auth=('',''))
     with driver.session() as neo4j:
         results = neo4j.run(query)
-    return [BeaconConceptType(id=','.join(record['types']), frequency=record['count']) for record in results]
+    thing = [BeaconConceptType(id=','.join(record['types']), frequency=record['count']) for record in results]
+    return thing
 
 
 def get_predicates():  # noqa: E501
